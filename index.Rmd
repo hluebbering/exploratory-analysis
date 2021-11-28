@@ -85,14 +85,15 @@ knitr::kable(df, col.names = c("Data Columns", "Type", "Unique" ,"Description"),
 
 First, scanning the data, one aspect brought to my attention was that the columns labeled from 1960 to 2020 are the years, where each row contains the numeric value for the indicator. Another aspect I noticed is that the indicator names can split into broader topics. For example, we can use a separator dot to split the indicator code column to separate the indicator name fields into more broad topics: Energy Production, Energy Emissions, Exports, Imports, Transportation, Government Finance, and more. Notice that although the indicator name and code variables are thorough, the numeric value for each indicator is not always available, indicated by a null value. Lastly, I realized that specific country names, such as "Arab World" and "European Union," are not countries. Instead, these qualitative values are pre-aggregated groupings of many countries. 
 
-
+ 
 ```{r}
-df_map <- read.csv('data/world_map.csv')
+df_map <- read.csv('data/map2.csv')
+colnames(df_map) <- c("Country", "Code", "Region" ,"Lat", "Long")
 # common map properties
 g <- list(
   scope = 'world',
   showland = TRUE,
-  landcolor = toRGB("grey90"),
+  landcolor = toRGB("grey91"),
   countrycolor = toRGB("gray30"),
   showcountries = TRUE,
   showframe = FALSE,
@@ -102,20 +103,21 @@ g <- list(
   subunitcolor = toRGB("white")
 )
 
-one_map <- function(dat) {
-  plot_geo(dat) %>%
-    add_markers(x = ~Longitude..generated., y = ~Latitude..generated., color = I("#33554c"), alpha = 0.5) %>%
-    layout(geo = g)}
 
-df_map <- df_map %>% do(mafig = one_map(.))
-fig <- df_map %>% subplot(nrows = 1)
-fig <- fig %>% layout(
-  showlegend = FALSE,
-  hovermode = TRUE
-)
+fig <- plot_geo(df_map, locationmode = 'world', size = 10)
+fig <- fig %>% add_markers(
+    x = ~Long, y = ~Lat, color = ~Region, colors=c("#34544c", "#607d48", "#b6bd67",
+              "#fcd476", "#e78247", "#db535b", "#eb9fa9", "#f2d5ce")
+  )
+fig <- fig %>% layout(geo = g, showlegend = FALSE)
 
 fig
 ```
+
+
+
+
+
 
 
 ----------------------------------
@@ -177,7 +179,7 @@ knitr::kable(df1, col.names = c("Indicator Name", "Measure", "Description")) %>%
 
 \ 
 
-I then pivoted the year columns (from 1960 to 2020) into a single variable called *Year* and a corresponding values column labeled as *Indicator Value*. Next, I removed redundant columns such as *Country Code* and *Indicator Code*while removing any null values found in the *Indicator Value*'s column. Then, I converted *Country Name* to a geographic data role and filtered out 47 geographically integrated country groups. Lastly, I transformed the single indicator variable into multiple variable columns, converting rows under *Indicator Name* into columns. 
+I then pivoted the year columns (from 1960 to 2020) into a single variable called *Year* and a corresponding values column labeled as *Indicator Value*. Next, I removed redundant columns such as *Country Code* and *Indicator Code* while removing any null values found in the *Indicator Value*'s column. Then, I converted *Country Name* to a geographic data role and filtered out 47 geographically integrated country groups. Lastly, I transformed the single indicator variable into multiple variable columns, converting rows under *Indicator Name* into columns. 
 
 
 
@@ -238,7 +240,7 @@ close(fileConn)
 ```
 
 ```{r}
-knitr::include_graphics("assets/flow1.svg")
+#knitr::include_graphics("assets/flow1.svg")
 ```
 
 \ 
@@ -247,7 +249,7 @@ knitr::include_graphics("assets/flow1.svg")
 #### Various Visualizations
 
 
-Now that the data is in a workable format, I start the visual exploratory analysis in Tableau. Exploratory visual analysis is often an iterative process. Hence, I manipulated and created various intermediate views in an attempt to assess the data-related question. First, I made a simple time series chart to show the annual changes in CO2 emissions. I filtered the data to include only the top 8 emitting countries, and then I plotted the data available over time to observe any trends.
+Now that the data is in a workable format, I start the visual exploratory analysis in Tableau. Exploratory visual analysis is often an iterative process. Hence, I manipulated and created various intermediate views in an attempt to assess the data-related question. First, I made a simple bar chart to show the total CO2 emissions by countries. I filtered the data to include only the top 8 emitting countries.
 
 
 ```{r}
@@ -258,11 +260,45 @@ Now that the data is in a workable format, I start the visual exploratory analys
 
 
 ```{r}
-df <- read.csv("data/yearly_co2.csv")
+df_total <- read.csv("data/total_co2.csv")
+colnames(df_total) <- c("Country", "Total_CO2_Emissions")
+df_total[df_total == "Russian Federation"] <- "Russia"
+df_total[df_total == "United Kingdom"] <- "Britain"
+
+
+```
+
+```{r}
+p <- df_total %>%
+    mutate(text = paste("Country: ", Country, sep="")) %>%
+
+  arrange(Total_CO2_Emissions) %>%
+  ggplot( aes(x=Country, y=Total_CO2_Emissions, group = Country, fill=Country, text=text)) + 
+  geom_bar(stat="identity") + scale_fill_manual(values = rhg_cols) + theme_ipsum() +
+  scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
+  labs(title="Total CO2 Emissions By Country | 1960-2018", x = "Country", y="Thousand metric tons of CO2")+ 
+  theme(legend.position = "none",
+        plot.title = element_text(size = 10, color="#36454f", family = "Frank Ruhl Libre"),
+        legend.text = element_text(size=8, color="#36454f", family = "Frank Ruhl Libre"),
+        legend.title = element_text(colour = "white", size = 0),
+        axis.title.x  = element_text(size=9, color="#36454f", family = "Frank Ruhl Libre"),
+        axis.title.y  = element_text(size=9, color="#36454f", family = "Frank Ruhl Libre"),
+        axis.text = element_text(colour = "gray", family = "Roboto Condensed", face="bold"),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 8))
+
+p <- ggplotly(p, tooltip = "text")
+p
+
 ```
 
 
+
+Based on the above, the top emitting countries are the United Kingdom, Canada, China, Germany, India, Japan, Russia, and the United States. Next, I made a simple time series chart to show the annual changes in CO2 emissions. I filtered the data to include only the top 8 emitting countries, and then I plotted the data available over time to observe any trends.
+
+
 ```{r}
+df <- read.csv("data/yearly_co2.csv")
 p <- df %>%
   mutate(text = paste("Country: ", Country.Name, "\nYear: ", ï..Year.of.Year, sep="")) %>%
   
@@ -412,6 +448,7 @@ fig <- components %>%
               "#fcd476", "#e78247", "#db535b", "#eb9fa9", "#f2d5ce")) %>%
   style(diagonal = list(visible = FALSE)) %>%
   layout(
+    showlegend= FALSE,
     legend=list(title=list(text='color')),
     hovermode='closest',
     dragmode= 'select',
@@ -455,7 +492,7 @@ t2 <- list(
   size = 11,
   color = 'black')
 
-fig <- plot_ly(components, x = ~PC1, y = ~PC2, color = ~df3$Region, colors = c("#34544c", "#607d48", "#b6bd67","#fcd476", "#e78247", "#db535b", "#eb9fa9", "#f2d5ce"), type = 'scatter', mode = 'markers',alpha = 0.85, marker = list(size = 11)) %>%
+fig <- plot_ly(components, x = ~PC1, y = ~PC2, color = ~df3$Region, colors = c("#3b5c53", "#698452", "#b6bd67","#fddf99", "#ea8f5b", "#e0656c", "#ea9fa9", "#f2d5cf"), type = 'scatter', mode = 'markers',alpha = 0.9, marker = list(size = 11)) %>%
   layout(
     legend=list(title=list(text='Region'), font=t),
     plot_bgcolor = "white",
