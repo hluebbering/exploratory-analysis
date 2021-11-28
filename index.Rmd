@@ -99,7 +99,7 @@ g <- list(
 
 one_map <- function(dat) {
   plot_geo(dat) %>%
-    add_markers(x = ~Longitude..generated., y = ~Latitude..generated., color = I("blue"), alpha = 0.5) %>%
+    add_markers(x = ~Longitude..generated., y = ~Latitude..generated., color = I("#33554c"), alpha = 0.5) %>%
     layout(geo = g)}
 
 df_map <- df_map %>% do(mafig = one_map(.))
@@ -110,14 +110,7 @@ fig <- fig %>% layout(
 )
 
 fig
-
 ```
-
-
-
-
-
-
 
 
 ----------------------------------
@@ -427,7 +420,7 @@ fig
 ```
 
 
-Overall, the above plot allows us to visualize high-dimensional PCs of our data grouped by region. Next, we visualize the first two principal components of a PCA. We also visualize the loadings of our PCA analysis using annotations to indicate which feature a certain loading original belongs to. Here, we define loadings as $loadings = eigenvectors \cdot \sqrt{eigenvalues}$.
+Overall, the above plot allows us to visualize high-dimensional PCs of our data grouped by region. Next, we visualize the first two principal components of a PCA. We also visualize the loadings of our PCA analysis using annotations to indicate which feature a certain loading original belongs to. Here, we define loadings as ${\small\textrm{loadings}} = \mathbf{v} \cdot \sqrt{\mathbf{\lambda}}$, where $\mathbf{v}$ denotes the eigenvector and $\mathbf{\lambda}$ denotes the eigenvalues.
 
 
 
