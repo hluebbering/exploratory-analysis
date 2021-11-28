@@ -49,7 +49,7 @@ rhg_cols <- c("#34544c", "#607d48", "#b6bd67",
 ## Introduction
 
 
-In the following project, I use Tableau and Python to perform necessary exploratory visual analysis on the real-world *World Development Indicators* data set. The exploratory visual analysis process uses visualizations to explore and form ideas about the data. The process entails looking at the dataset, coming up with a question or hypothesis, iteratively answering the proposed question through visualizations, and describing the final results. Specifically, I formulated two questions based on the World Development Indicators data set. Addressing these questions, I manipulated the data and built several visualizations that revealed areas for further exploration and investigation. These various displays included bar charts, scatter plots, maps, time series, and more. In the end, I created a final visualization for each proposed question that best supported the question by presenting a clear resolution. 
+In the following project, I use Tableau and Python to perform necessary exploratory visual analysis on the real-world *World Development Indicators* data set. The exploratory visual analysis process uses visualizations to explore and form ideas about the data. The process entails looking at the dataset, coming up with a question or hypothesis, iteratively answering the proposed question through visualizations, and describing the final results. Specifically, I formulated one question based on the World Development Indicators data set. Addressing these questions, I manipulated the data and built several visualizations that revealed areas for further exploration and investigation. These various displays included bar charts, scatter plots, maps, time series, and more. In the end, I created a final visualization that best supported the question by presenting a clear resolution. 
 
 
 
@@ -91,9 +91,14 @@ df_map <- read.csv('data/world_map.csv')
 # common map properties
 g <- list(
   scope = 'world',
-  showland = T,
-  landcolor = toRGB("gray90"),
-  showcountries = T,
+  showland = TRUE,
+  landcolor = toRGB("grey90"),
+  countrycolor = toRGB("gray30"),
+  showcountries = TRUE,
+  showframe = FALSE,
+  showcoastlines = FALSE,
+  projection = list(type = 'Mercator'),
+  resolution = 90,
   subunitcolor = toRGB("white")
 )
 
