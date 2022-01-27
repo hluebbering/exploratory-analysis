@@ -1,5 +1,5 @@
 ---
-title: "A4: Exploratory Visual Analysis"
+title: "Exploratory Visual Analysis"
 author: "Hannah Luebbering"
 date: "November 8, 2021"
 output:
@@ -15,7 +15,7 @@ nocite: '@*'
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(kableExtra)
 library(pagedown)
 library(DiagrammeR)
@@ -42,8 +42,6 @@ rhg_cols <- c("#34544c", "#607d48", "#b6bd67",
 
 
 
--------------------------------------
-
 
 
 ## Introduction
@@ -58,7 +56,7 @@ In the following project, I use Tableau and Python to perform necessary explorat
 
 We explore the *World Development Indicators* (WDI) data set downloaded from the World Bank's website for this project. The World Bank Group is an international organization that provides global development data. Downloaded as a zip file, the WDI contains six CSV files. Precisely for this project, I worked with the WDIData.csv file. This rich multivariate data set contains 383,838 rows and 66 columns, including qualitative and quantitative data. The qualitative data includes Country Name, Country Code, Indicator Name, and Indicator Code, whereas the quantitative data consists of a numeric indicator Value. There are 266 unique countries and 1,442 development indicators, covering health, environment, infrastructure, economic policy, education, and more. 
 
-\ 
+
 
 ```{r}
 df <- data.frame("Column" = c("Country Name", "Country Code", "Indicator Name", "Indicator Code", "1960 to 2020"),
@@ -70,15 +68,12 @@ df <- data.frame("Column" = c("Country Name", "Country Code", "Indicator Name", 
 
 ```{r, fig.cap="Table 1 | Overview and description of the WDI data set."}
 knitr::kable(df, col.names = c("Data Columns", "Type", "Unique" ,"Description"), align = "l") %>%
-  kable_styling(full_width = TRUE, bootstrap_options = c("basic", "hover"), font_size = 11, html_font = "Roboto Condensed") %>%
+  kable_styling(full_width = T, bootstrap_options = c("basic", "hover"), font_size = 11, html_font = "Roboto Condensed") %>%
   kable_paper(lightable_options =  c("striped", "basic"), font_size = 11, html_font = "Roboto Condensed")%>%
-  row_spec(0, color = "black", background = "#b2beb585")
+  row_spec(0, color = "white", background = "#33554c")
 
 ```
 
-
-
-\ 
 
 
 
@@ -86,7 +81,7 @@ knitr::kable(df, col.names = c("Data Columns", "Type", "Unique" ,"Description"),
 First, scanning the data, one aspect brought to my attention was that the columns labeled from 1960 to 2020 are the years, where each row contains the numeric value for the indicator. Another aspect I noticed is that the indicator names can split into broader topics. For example, we can use a separator dot to split the indicator code column to separate the indicator name fields into more broad topics: Energy Production, Energy Emissions, Exports, Imports, Transportation, Government Finance, and more. Notice that although the indicator name and code variables are thorough, the numeric value for each indicator is not always available, indicated by a null value. Lastly, I realized that specific country names, such as "Arab World" and "European Union," are not countries. Instead, these qualitative values are pre-aggregated groupings of many countries. 
 
  
-```{r}
+```{r,  out.width="100%", out.height="100%"}
 df_map <- read.csv('data/map2.csv')
 colnames(df_map) <- c("Country", "Code", "Region" ,"Lat", "Long")
 # common map properties
@@ -109,7 +104,16 @@ fig <- fig %>% add_markers(
     x = ~Long, y = ~Lat, color = ~Region, colors=c("#34544c", "#607d48", "#b6bd67",
               "#fcd476", "#e78247", "#db535b", "#eb9fa9", "#f2d5ce")
   )
-fig <- fig %>% layout(geo = g, showlegend = FALSE)
+
+m <- list(
+  l = 5,
+  r = 5,
+  b = 20,
+  t = 20,
+  pad = 4
+)
+
+fig <- fig %>% layout(geo = g, showlegend = FALSE, autosize = TRUE,  margin=m, height=336)
 
 fig
 ```
@@ -129,16 +133,11 @@ fig
 > What are the main direct drivers that influence the changes in CO2 emissions, and how do they change worldwide over time?
 
 
-The above posed question comes from the information provided in the WDI data set. In the following, I include a description and discussion of the overall process, a final visualization, and a short description of how the visualization addresses the question. 
-
-
-### Process
-
-Greenhouse gases, especially carbon dioxide (CO2) emissions, are one of the leading causes of climate change. The following analysis examines the relationship between global CO2 emissions and economic growth, industrialization, urban population, technology development expenditures, foreign trade, and energy consumption from 1960 to 2018. The first question I asked stems from my interest in the environment. Before starting the analysis, I began by looking at the change in CO2 emission rates in the United States. After a quick examination, I read through academic articles on the driving factors of climate change and CO2 emissions and investigated the relationship between different indicators and emissions. For the overall analysis, my goal is to identify the main trends and direct drivers that affect the changes in CO2 emissions in the world and the largest emitters. Based on my preliminary research, I hypothesize that energy consumption and economic growth are the two main drivers of CO2 emissions, and both drivers increase globally over time. 
+The above posed question comes from the information provided in the WDI data set. Greenhouse gases, especially carbon dioxide (CO2) emissions, are one of the leading causes of climate change. The following analysis examines the relationship between global CO2 emissions and economic growth, industrialization, urban population, technology development expenditures, foreign trade, and energy consumption from 1960 to 2018. The first question I asked stems from my interest in the environment. Before starting the analysis, I began by looking at the change in CO2 emission rates in the United States. After a quick examination, I read through academic articles on the driving factors of climate change and CO2 emissions and investigated the relationship between different indicators and emissions. For the overall analysis, my goal is to identify the main trends and direct drivers that affect the changes in CO2 emissions in the world and the largest emitters. Based on my preliminary research, I hypothesize that energy consumption and economic growth are the two main drivers of CO2 emissions, and both drivers increase globally over time. 
 
 
 
-#### Data exploration
+### Data exploration
 
 To prepare data for this analysis, I start by importing the WDIData.csv to Tableau Prep. With Tableau Prep, data preparation becomes visual and straightforward. Through the building of flows, we can instantly clean and shape our data for analysis. Beginning the cleaning process, I selected the following relevant indicators outlined in the table below.
 
@@ -171,13 +170,13 @@ df1 <- data.frame("Indicator" = c("GDP per capita, PPP",
 
 ```{r, fig.cap="Table 2 | Selected developmental indicators for assessing the first question."}
 knitr::kable(df1, col.names = c("Indicator Name", "Measure", "Description")) %>%
-  kable_styling(full_width = TRUE, bootstrap_options = c("basic", "hover"), font_size = 11, html_font = "Roboto Condensed") %>%
+  kable_styling(full_width = T, bootstrap_options = c("basic", "hover"), font_size = 11, html_font = "Roboto Condensed") %>%
   kable_paper(lightable_options =  c("striped", "basic"), font_size = 11, html_font = "Roboto Condensed")%>%
-  row_spec(0, color = "black", background = "#b2beb585")
+  row_spec(0, color = "white", background = "#33554c")
 ```
 
 
-\ 
+
 
 I then pivoted the year columns (from 1960 to 2020) into a single variable called *Year* and a corresponding values column labeled as *Indicator Value*. Next, I removed redundant columns such as *Country Code* and *Indicator Code* while removing any null values found in the *Indicator Value*'s column. Then, I converted *Country Name* to a geographic data role and filtered out 47 geographically integrated country groups. Lastly, I transformed the single indicator variable into multiple variable columns, converting rows under *Indicator Name* into columns. 
 
@@ -243,18 +242,15 @@ close(fileConn)
 #knitr::include_graphics("assets/flow1.svg")
 ```
 
-\ 
 
 
-#### Various Visualizations
+
+### Data Visualizations
 
 
 Now that the data is in a workable format, I start the visual exploratory analysis in Tableau. Exploratory visual analysis is often an iterative process. Hence, I manipulated and created various intermediate views in an attempt to assess the data-related question. First, I made a simple bar chart to show the total CO2 emissions by countries. I filtered the data to include only the top 8 emitting countries.
 
 
-```{r}
-#knitr::include_graphics("assets/CO2Emissions.png", dpi = 200)
-```
 
 
 
@@ -268,27 +264,46 @@ df_total[df_total == "United Kingdom"] <- "Britain"
 
 ```
 
-```{r}
+```{r, out.width="100%", out.height="150%"}
+library(dplyr)
+library(scales)
+library(latex2exp)
+library(tikzDevice)
+
+
 p <- df_total %>%
     mutate(text = paste("Country: ", Country, sep="")) %>%
 
   arrange(Total_CO2_Emissions) %>%
   ggplot( aes(x=Country, y=Total_CO2_Emissions, group = Country, fill=Country, text=text)) + 
-  geom_bar(stat="identity") + scale_fill_manual(values = rhg_cols) + theme_ipsum() +
+  geom_bar(stat="identity") + scale_fill_manual(values = rhg_cols) +
   scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
-  labs(title="Total CO2 Emissions By Country | 1960-2018", x = "Country", y="Thousand metric tons of CO2")+ 
+  ggtitle(label = "Total CO2 Emissions By Country | 1960-2018") +
+  ylab(label = "$CO_2 \\text{ Emissions (thousand tonnes)}$")+ 
+  xlab(label = "") + theme_minimal() +
   theme(legend.position = "none",
-        plot.title = element_text(size = 10, color="#36454f", family = "Frank Ruhl Libre"),
+        plot.title = element_text(size = 11, color="black", family = "Frank Ruhl Libre"),
         legend.text = element_text(size=8, color="#36454f", family = "Frank Ruhl Libre"),
         legend.title = element_text(colour = "white", size = 0),
         axis.title.x  = element_text(size=9, color="#36454f", family = "Frank Ruhl Libre"),
-        axis.title.y  = element_text(size=9, color="#36454f", family = "Frank Ruhl Libre"),
+        axis.title.y  = element_text(size=8, color="#36454f", family = "Frank Ruhl Libre"),
         axis.text = element_text(colour = "gray", family = "Roboto Condensed", face="bold"),
         axis.text.x = element_text(size = 9),
         axis.text.y = element_text(size = 8))
 
-p <- ggplotly(p, tooltip = "text")
+m2 <- list(
+  l = 5,
+  r = 5,
+  b = 30,
+  t = 30,
+  pad = 4
+)
+
+p <- ggplotly(p, tooltip = "text") %>% config(mathjax = 'cdn') %>% layout(autosize = T, height = 336, margin=m2)
+
 p
+
+
 
 ```
 
@@ -297,7 +312,8 @@ p
 Based on the above, the top emitting countries are the United Kingdom, Canada, China, Germany, India, Japan, Russia, and the United States. Next, I made a simple time series chart to show the annual changes in CO2 emissions. I filtered the data to include only the top 8 emitting countries, and then I plotted the data available over time to observe any trends.
 
 
-```{r}
+
+```{r, out.width="100%", out.height="80%"}
 df <- read.csv("data/yearly_co2.csv")
 p <- df %>%
   mutate(text = paste("Country: ", Country.Name, "\nYear: ", ï..Year.of.Year, sep="")) %>%
@@ -305,10 +321,12 @@ p <- df %>%
   arrange(Total.CO2.emissions..thousand.metric.tons.of.CO2.) %>%
   mutate(Country = factor(Country.Name, levels=c("United States", "China", "Russian Federation", "Japan", "India", "United Kingdom", "Canada", "Germany"))) %>%
   ggplot( aes(x=ï..Year.of.Year, y=Total.CO2.emissions..thousand.metric.tons.of.CO2., group = Country, color=Country, text=text)) + 
-  geom_line(size=0.75) + scale_color_manual(values = rhg_cols) + theme_ipsum() +
+  geom_line(size=0.75) + scale_color_manual(values = rhg_cols) + theme_minimal() +
   scale_y_continuous(labels = label_number(suffix = " M", scale = 1e-6)) +
-  labs(title="Annual CO2 Emissions By Country | 1960-2018", x = "Year", y="Thousand metric tons of CO2")+ 
-  theme(plot.title = element_text(size = 10, color="#36454f", family = "Frank Ruhl Libre"),
+  ggtitle(label = "Annual CO2 Emissions By Country | 1960-2018") +
+  ylab(label = "$CO_2 \\text{ Emissions (thousand tonnes)}$")+ 
+  xlab(label = "") +
+  theme(plot.title = element_text(size = 11, color="black", family = "Frank Ruhl Libre"),
         legend.text = element_text(size=8, color="#36454f", family = "Frank Ruhl Libre"),
         legend.title = element_text(colour = "white", size = 0),
         axis.title.x  = element_text(size=9, color="#36454f", family = "Frank Ruhl Libre"),
@@ -318,21 +336,24 @@ p <- df %>%
         axis.text.y = element_text(size = 8)) +
   scale_x_continuous(n.breaks = 8)
 
-p <- ggplotly(p, tooltip = "text")
+m3 <- list(
+  l = 0,
+  r = 0,
+  b = 30,
+  t = 30,
+  pad = 0
+)
+
+
+p <- ggplotly(p, tooltip = "text") %>% layout(autosize = TRUE,  margin=m3,height=356)  %>% config(mathjax = 'cdn')
 #p
 p
-# p %>%layout(title = "<b>Total Awards by Year by Gender</b>",
-#          xaxis = list(title = "<b>Year</b>"),
-#          yaxis = list(title = "<b>Number of Awards</b>"),
-#          yaxis2 = list(title = "<b>Ratio of Awards (%)</b>"),
-#          margin = list(t = 70))
-# save the widget
-# library(htmlwidgets)
-# saveWidget(p, file=paste0( getwd(), "/HtmlWidget/ggplotlyAreachart.html"))
 ```
 
 
 In the above, we can compare the total CO2 emissions of the top emitting countries. The plot shows that the total CO2 emissions is much higher in the US than in other countries. However, since the population of the US and nations such as India and China aren't comparable, we cannot make a proper inference on whether there is a significant difference in total CO2 emissions among these countries. Although this view provides a glimpse into the leading countries and trends in yearly CO2 emissions, it does not offer any insight into the driving factors of emission rates. Moving forward, I begin finding different ways to showcase CO2 emissions related to other indicators that measure economic growth. Specifically, in the following, I created a scatter plot for 2018 illustrating CO2 emissions with GDP per capita that uses logarithmic scales on both the horizontal and vertical axes. In addition, the size of each measure shows the total population. 
+
+
 
 ```{r}
 df2 <- read.csv("data/co2_gdp.csv")
@@ -340,7 +361,7 @@ rhg_cols <- c("#34544c", "#607d48", "#b6bd67",
               "#fcd476", "#e78247", "#db535b", "#eb9fa9", "#f2d5ce")
 ```
 
-```{r}
+```{r, out.width="100%", out.height="80%"}
 # Interactive version
 p <- df2 %>%
   mutate(Population..total=round(Population..total/1000000,3)) %>%
@@ -358,9 +379,11 @@ p <- df2 %>%
     scale_color_manual(values = rhg_cols, guide="none") +
   scale_x_continuous(trans='log2', labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(trans='log2') +
-    theme_ipsum() +
-  labs(title="CO2 Emissions & GDP per Capita | 2018", x = "GDP per capita, PPP (curent international $)", y="CO2 Emissions (metric tons per capita)")+ 
-  theme(plot.title = element_text(size = 10, color="#36454f", family = "Frank Ruhl Libre"),
+    theme_minimal() +
+  ggtitle(label = "CO2 Emissions & GDP per Capita | 2018") +
+  ylab(label = "$CO_2 \\text{ Emissions (thousand tonnes)}$")+ 
+  xlab(label = "GDP per capita, PPP") +
+  theme(plot.title = element_text(size = 11, color="black", family = "Frank Ruhl Libre"),
         axis.title.x  = element_text(size=9, color="#36454f", family = "Frank Ruhl Libre"),
         axis.title.y  = element_text(size=9, color="#36454f", family = "Frank Ruhl Libre"),
         axis.text = element_text(colour = "gray", family = "Roboto Condensed", face="bold"),
@@ -370,7 +393,12 @@ p <- df2 %>%
         legend.title = element_text(colour = "white", size = 0),
         legend.position = "top")
 
-pp <- ggplotly(p, tooltip="text")
+t <- list(
+  family = "Frank Ruhl Libre",
+  size = 10,
+  color = '#36454f')
+
+pp <- ggplotly(p, tooltip="text") %>% layout(autosize = TRUE,  margin=m3, height=336, legend=list(font=t)) %>% config(mathjax = 'cdn')
 pp
 ```
 
@@ -383,7 +411,7 @@ pp
 The above chart shows that GDP has an overall positive influence on CO2 emissions. In general, GDP per capita is a broad measure of economic growth; so with these findings, we can say that country economic growth measured by GDP per capita contributes to increased CO2 emissions. While this view provides a glimpse into the relationship between CO2 emissions, GDP rates, and the total population, it does not give insight into other potential driving factors of emission rates. Moving forward, I begin to incorporate a more multivariate view by finding different ways to plot both the CO2 emissions with several indicators. As follows, I present a multivariate view of the relationship between CO2 emissions and GDP growth, urban population, technology development, and foreign investments.
 
 
-\ 
+
 
 
 ### PCA Analysis
@@ -424,15 +452,23 @@ components$PC3 <- -components$PC3
 components$PC2 <- -components$PC2
 ```
 
-```{r}
+```{r, out.width="90%", out.height="100%"}
+m4 <- list(
+  l = 50,
+  r = 50,
+  b = 30,
+  t = 30,
+  pad = 0
+)
 axis = list(showline=FALSE,
             zeroline=FALSE,
             gridcolor='#ffff',
-            ticklen=4,
-            titlefont=list(size=13))
+            ticklen=3,
+            titlefont=list(size=9, color='black'),
+            tickfont = list(family='Roboto Condensed', color='grey30', size=8))
 
 fig <- components %>%
-  plot_ly()  %>%
+  plot_ly(height=336)  %>%
   add_trace(type = 'splom',
             dimensions = list(
               list(label = paste('PC 1 (',toString(round(explained_variance_ratio[1],1)),'%)', 
@@ -453,12 +489,15 @@ fig <- components %>%
     hovermode='closest',
     dragmode= 'select',
     plot_bgcolor='rgba(240,240,240, 0.95)',
-    xaxis=list(domain=NULL, showline=F, zeroline=F, gridcolor='#ffff', ticklen=4),
-    yaxis=list(domain=NULL, showline=F, zeroline=F, gridcolor='#ffff', ticklen=4),
+    xaxis=list(titlefont = list(size=9, color="black"), domain=NULL, showline=F, zeroline=F, gridcolor='#ffff', ticklen=3, tickfont = list(family='Roboto Condensed', color='grey30', size=8)),
+    yaxis=list(titlefont = list(size=9, color="black"), domain=NULL, showline=F, zeroline=F, gridcolor='#ffff', ticklen=3, tickfont = list(family='Roboto Condensed', color='grey30', size=8)),
     xaxis2=axis, xaxis3=axis, xaxis4=axis,
-    yaxis2=axis, yaxis3=axis, yaxis4=axis)
+    yaxis2=axis, yaxis3=axis, yaxis4=axis,
+    autosize = TRUE,  margin=m4, height=320)
 
 fig
+
+
 ```
 
 
@@ -467,7 +506,7 @@ Overall, the above plot allows us to visualize high-dimensional PCs of our data 
 
 
 
-```{r}
+```{r,out.width="100%", out.height="100%"}
 prin_comp <- prcomp(X, rank. = 2, scale. = TRUE, tol = 0.1)
 components <- prin_comp[["x"]]
 components <- data.frame(components)
@@ -499,10 +538,11 @@ fig <- plot_ly(components, x = ~PC1, y = ~PC2, color = ~df3$Region, colors = c("
     xaxis = list(
       title = "0", range=list(-2,2.5)),
     yaxis = list(
-      title = "1", range=list(-2.5, 3)))
+      title = "1", range=list(-2.5, 3)),
+    autosize = TRUE,  margin=m, height=336)
 for (i in seq(6)){
   fig <- fig %>%
-    add_segments(x = 0, xend = loadings[i, 1], y = 0, yend = loadings[i, 2] + 0.1, line = list(color = 'black'),alpha=0.5, inherit = FALSE, showlegend = FALSE) %>%
+    add_segments(x = 0, xend = loadings[i, 1], y = 0, yend = loadings[i, 2] + 0.1, line = list(color = 'black'),alpha=0.65, inherit = FALSE, showlegend = FALSE) %>%
     add_annotations(x=loadings[i, 1], y=loadings[i, 2] + 0.1, ax = 0, ay = 0,text = features[i], xanchor = 'center', yanchor= 'bottom', font=t2)
 }
 

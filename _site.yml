@@ -1,3 +1,6 @@
 name: "Exploratory Visual Analysis"
 navbar:
   title: "Exploratory Visual Analysis"
+  right:
+  - href: "https://hluebbering.github.io/"
+    icon: fa-home
